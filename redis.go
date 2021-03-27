@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"os"
 	"time"
+
 	"github.com/go-redis/redis"
 )
 
@@ -15,8 +17,10 @@ type redisClient struct {
 }
 
 func initialize() *redisClient {
+	redisUrl := os.Getenv("REDIS_URL")
+
 	c := redis.NewClient(&redis.Options{
-		Addr: "127.0.0.1:6379",
+		Addr: redisUrl,
 	})
 
 	if err := c.Ping().Err(); err != nil {

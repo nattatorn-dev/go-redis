@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/rs/xid"
 )
 
@@ -103,6 +105,11 @@ func (service *Service) GetRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	redis := initialize()
 
 	service := &Service{redis: redis}
@@ -111,6 +118,7 @@ func main() {
 	router.HandleFunc("/", service.Request).Methods("POST")
 	router.HandleFunc("/", service.GetRequest).Methods("GET")
 
-	log.Println("Listin port :80")
-	log.Fatal(http.ListenAndServe(":80", router))
+	serverPort := os.Getenv("SERVER_PORT")
+	log.Println("Listin port :" + serverPort)
+	log.Fatal(http.ListenAndServe(":"+serverPort, router))
 }

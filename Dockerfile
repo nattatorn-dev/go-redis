@@ -1,11 +1,12 @@
-# build stage
-FROM golang:1.16.2-alpine AS build-env
-RUN apk --no-cache add build-base git bzr mercurial gcc
-ADD . /src
-RUN cd /src && go build -o app
+FROM golang:1.16.2-stretch AS builder
+WORKDIR /src
+COPY . .
+RUN go mod tidy
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-# final stage
-FROM alpine
-WORKDIR /app
-COPY --from=build-env /src/app /app/
-ENTRYPOINT ./app
+FROM alpine:latest  
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /src/main .
+COPY .env .
+CMD ["./main"] 
